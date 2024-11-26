@@ -4,7 +4,8 @@ import org.springframework.web.bind.annotation.RestController;
 
 import vn.hoidanit.jobhunter.domain.User;
 import vn.hoidanit.jobhunter.service.UserService;
-import vn.hoidanit.jobhunter.service.error.IdInvalidException;
+import vn.hoidanit.jobhunter.util.error.IdInvalidException;
+
 import java.util.List;
 
 import org.springframework.http.HttpStatus;
@@ -61,7 +62,7 @@ public class UserController {
 
     @PutMapping("/users")
     public ResponseEntity<User> updateUser(@RequestBody User putUser) {
-        return ResponseEntity.status(HttpStatus.OK).body(this.userService.handlUpdatUser(putUser));
+        return ResponseEntity.status(HttpStatus.OK).body(this.userService.handleUpdatUser(putUser));
 
     }
 }

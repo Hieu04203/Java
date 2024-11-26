@@ -36,7 +36,7 @@ public class UserService {
         return this.userRepository.findAll();
     }
 
-    public User handlUpdatUser(User putUser) {
+    public User handleUpdatUser(User putUser) {
         User currentUser = this.fetchUserById(putUser.getId());
         if (currentUser != null) {
             currentUser.setEmail(putUser.getEmail());
@@ -45,6 +45,9 @@ public class UserService {
             currentUser = this.userRepository.save(putUser);
         }
         return currentUser;
+    }
 
+    public User handleGetUserByUsername(String username) {
+        return userRepository.findByEmail(username);
     }
 }
