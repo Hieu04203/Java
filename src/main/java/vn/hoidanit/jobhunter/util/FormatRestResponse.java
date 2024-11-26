@@ -10,9 +10,10 @@ import org.springframework.web.servlet.mvc.method.annotation.ResponseBodyAdvice;
 
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletResponse;
+import vn.hoidanit.jobhunter.domain.RestResponse;
 
 @ControllerAdvice
-public class FormatRestResponse implements ResponseBodyAdvice {
+public class FormatRestResponse implements ResponseBodyAdvice<Object> {
 
     @Override
     public boolean supports(MethodParameter returnType, Class converterType) {
@@ -27,9 +28,28 @@ public class FormatRestResponse implements ResponseBodyAdvice {
             Class selectedConverterType,
             ServerHttpRequest request,
             ServerHttpResponse response) {
+
         HttpServletResponse servletResponse = ((ServletServerHttpResponse) response).getServletResponse();
         int status = servletResponse.getStatus();
-        return body;
+
+        if (body instanceof String) {
+            return body;
+        }
+
+        // case error
+        RestResponse<Object> res = new RestResponse<Object>();
+        res.setStatusCode(status);
+        if (status >= 400) {
+            return body;
+
+        }
+        // case success
+        else {
+            res.setData(body);
+            res.setMessage("SUCCESS");
+        }
+
+        return res;
     }
 
 }
