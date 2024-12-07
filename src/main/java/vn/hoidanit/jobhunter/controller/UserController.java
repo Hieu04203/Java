@@ -4,7 +4,11 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.turkraft.springfilter.boot.Filter;
 
+import jakarta.validation.Valid;
 import vn.hoidanit.jobhunter.domain.User;
+import vn.hoidanit.jobhunter.domain.dto.ResCreateUserDTO;
+import vn.hoidanit.jobhunter.domain.dto.ResUpdateUserDTO;
+import vn.hoidanit.jobhunter.domain.dto.ResUserDTO;
 import vn.hoidanit.jobhunter.domain.dto.ResultPaginationDTO;
 import vn.hoidanit.jobhunter.service.UserService;
 import vn.hoidanit.jobhunter.util.annotation.ApiMessage;
@@ -29,7 +33,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
 @RestController
-@RequestMapping("/api/vi")
+@RequestMapping("/api/v1")
 public class UserController {
 
     private final UserService userService;
@@ -42,28 +46,47 @@ public class UserController {
     }
 
     @PostMapping("/users")
-    public ResponseEntity<User> creatNewUser(
-            @RequestBody User postUser) {
+    @ApiMessage("Create a new user")
+    public ResponseEntity<ResCreateUserDTO> creatNewUser(
+            @Valid @RequestBody User postUser) throws IdInvalidException {
+
+        boolean isEmailExists = this.userService.isEmailExist(postUser.getEmail());
+
+        if (isEmailExists) {
+            throw new IdInvalidException(
+                    "Email: " + postUser.getEmail() + "da ton tai");
+        }
+
         String hashPassword = this.passwordEncoder.encode(postUser.getPassword());
         postUser.setPassword(hashPassword);
 
-        User hieuUser = this.userService.handleCreatUser(postUser);
+        User hieuUser = this.userService.handleCreateUser(postUser);
 
-        return ResponseEntity.status(HttpStatus.CREATED).body(hieuUser);
+        return ResponseEntity.status(HttpStatus.CREATED).body(this.userService.convertToResCreateUserDTO(hieuUser));
     }
 
     @DeleteMapping("/users/{id}")
-    public ResponseEntity<String> deleteUser(@PathVariable("id") long id) throws IdInvalidException {
-        if (id > 100) {
-            throw new IdInvalidException("Id khong hop le");
+    @ApiMessage("Delete a user")
+    public ResponseEntity<Void> deleteUser(@PathVariable("id") long id)
+            throws IdInvalidException {
+        User currentUser = this.userService.fetchUserById(id);
+        if (currentUser == null) {
+            throw new IdInvalidException("User voi id " + id + "khong hop le");
         }
         this.userService.handleDeleteUser(id);
-        return ResponseEntity.status(HttpStatus.NO_CONTENT).body("Xoa thanh cong");
+        return ResponseEntity.ok(null);
     }
 
     @GetMapping("/users/{id}")
-    public ResponseEntity<User> fetchUserById(@PathVariable("id") long id) {
-        return ResponseEntity.status(HttpStatus.OK).body(this.userService.fetchUserById(id));
+    @ApiMessage("fetch user by id")
+    public ResponseEntity<ResUserDTO> fetchUserById(@PathVariable("id") long id)
+            throws IdInvalidException {
+        User fetchUser = this.userService.fetchUserById(id);
+        if (fetchUser == null) {
+            throw new IdInvalidException("User voi id " + id + "khong ton tai");
+        }
+
+        return ResponseEntity.status(HttpStatus.OK).body(this.userService.convertToResUserDTO(fetchUser));
     }
 
     @GetMapping("/users")
@@ -76,8 +99,17 @@ public class UserController {
     }
 
     @PutMapping("/users")
-    public ResponseEntity<User> updateUser(@RequestBody User putUser) {
-        return ResponseEntity.status(HttpStatus.OK).body(this.userService.handleUpdatUser(putUser));
+    @ApiMessage("Update a user")
+    public ResponseEntity<ResUpdateUserDTO> updateUser(@RequestBody User putUser)
+            throws IdInvalidException {
+
+        User hieuUser = this.userService.handleUpdateUser(putUser);
+
+        if (hieuUser == null) {
+            throw new IdInvalidException("User voi id = " + putUser.getId() + "khong ton tai");
+        }
+
+        return ResponseEntity.status(HttpStatus.OK).body(this.userService.convertToResUpdateUserDTO(putUser));
 
     }
 
