@@ -23,7 +23,8 @@ import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
 import org.springframework.stereotype.Service;
 
 import com.nimbusds.jose.util.Base64;
-import vn.hoidanit.jobhunter.domain.dto.ResLoginDTO;
+
+import vn.hoidanit.jobhunter.domain.respone.ResLoginDTO;
 
 @Service
 public class SecurityUtil {
