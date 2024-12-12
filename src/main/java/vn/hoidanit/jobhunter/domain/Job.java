@@ -4,6 +4,7 @@ import java.time.Instant;
 import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -14,6 +15,8 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
+import jakarta.persistence.JoinTable;
+import jakarta.persistence.ManyToMany;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.PrePersist;
@@ -23,35 +26,33 @@ import jakarta.validation.constraints.NotBlank;
 import lombok.Getter;
 import lombok.Setter;
 import vn.hoidanit.jobhunter.util.SecurityUtil;
-import vn.hoidanit.jobhunter.util.constant.GenderEnum;
+import vn.hoidanit.jobhunter.util.constant.LevelEnum;
 
 @Entity
-@Table(name = "users")
+@Table(name = "jobs")
 @Getter
 @Setter
-public class User {
+public class Job {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private long Id;
+    private long id;
 
+    @NotBlank(message = "name không được để trống")
     private String name;
-
-    @NotBlank(message = "Email khong duoc de trong")
-    private String email;
-
-    @NotBlank(message = "Password khong duoc de trong")
-    private String password;
-
-    private int age;
+    @NotBlank(message = "location không được để trống")
+    private String location;
+    private double salary;
+    private int quantity;
 
     @Enumerated(EnumType.STRING)
-    private GenderEnum gender;
-
-    private String address;
+    private LevelEnum level;
 
     @Column(columnDefinition = "MEDIUMTEXT")
-    private String refreshToken;
+    private String description;
 
+    private Instant startDate;
+    private Instant endDate;
+    private boolean active;
     private Instant createdAt;
     private Instant updatedAt;
     private String createdBy;
@@ -61,19 +62,21 @@ public class User {
     @JoinColumn(name = "company_id")
     private Company company;
 
-    @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
+    @ManyToMany(fetch = FetchType.LAZY)
+    @JsonIgnoreProperties(value = { "jobs" })
+    @JoinTable(name = "job_skill", joinColumns = @JoinColumn(name = "job_id"), inverseJoinColumns = @JoinColumn(name = "skill_id"))
+    private List<Skill> skills;
+
+    @OneToMany(mappedBy = "job", fetch = FetchType.LAZY)
     @JsonIgnore
     List<Resume> resumes;
-
-    @ManyToOne
-    @JoinColumn(name = "role_id")
-    private Role role;
 
     @PrePersist
     public void handleBeforeCreate() {
         this.createdBy = SecurityUtil.getCurrentUserLogin().isPresent() == true
                 ? SecurityUtil.getCurrentUserLogin().get()
                 : "";
+
         this.createdAt = Instant.now();
     }
 
@@ -82,6 +85,7 @@ public class User {
         this.updatedBy = SecurityUtil.getCurrentUserLogin().isPresent() == true
                 ? SecurityUtil.getCurrentUserLogin().get()
                 : "";
+
         this.updatedAt = Instant.now();
     }
 }
