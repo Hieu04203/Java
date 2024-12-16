@@ -88,6 +88,6 @@ public class CompanyService {
 
     public Optional<Company> findById(long id) {
 
-        throw new UnsupportedOperationException("Unimplemented method 'findById'");
+        return this.companyRepository.findById(id);
     }
 }

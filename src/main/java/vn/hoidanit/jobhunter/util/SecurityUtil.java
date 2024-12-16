@@ -8,6 +8,7 @@ import java.util.Optional;
 
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
+
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContext;
@@ -82,7 +83,6 @@ public class SecurityUtil {
         userToken.setId(dto.getUser().getId());
         userToken.setEmail(dto.getUser().getEmail());
         userToken.setName(dto.getUser().getName());
-
         // @formatter:off
         JwtClaimsSet claims = JwtClaimsSet.builder()
             .issuedAt(now)
@@ -96,7 +96,7 @@ public class SecurityUtil {
 
     }
 
-     private SecretKey getSecretKey() {
+    private SecretKey getSecretKey() {
         byte[] keyBytes = Base64.from(jwtKey).decode();
         return new SecretKeySpec(keyBytes, 0, keyBytes.length,
                 JWT_ALGORITHM.getName());
@@ -112,7 +112,7 @@ public class SecurityUtil {
                     throw e;
                 }
     }
-    
+
     /**
      * Get the login of the current user.
      *

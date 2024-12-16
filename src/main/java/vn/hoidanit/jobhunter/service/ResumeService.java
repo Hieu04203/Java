@@ -9,7 +9,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
-
 import com.turkraft.springfilter.builder.FilterBuilder;
 import com.turkraft.springfilter.converter.FilterSpecification;
 import com.turkraft.springfilter.converter.FilterSpecificationConverter;
@@ -36,6 +35,7 @@ public class ResumeService {
     private FilterParser filterParser;
     @Autowired
     private FilterSpecificationConverter filterSpecificationConverter;
+
     private final ResumeRepository resumeRepository;
     private final UserRepository userRepository;
     private final JobRepository jobRepository;
@@ -60,21 +60,25 @@ public class ResumeService {
         Optional<User> userOptional = this.userRepository.findById(resume.getUser().getId());
         if (userOptional.isEmpty())
             return false;
+
         // check job by id
         if (resume.getJob() == null)
             return false;
         Optional<Job> jobOptional = this.jobRepository.findById(resume.getJob().getId());
         if (jobOptional.isEmpty())
             return false;
+
         return true;
     }
 
     public ResCreateResumeDTO create(Resume resume) {
         resume = this.resumeRepository.save(resume);
+
         ResCreateResumeDTO res = new ResCreateResumeDTO();
         res.setId(resume.getId());
         res.setCreatedBy(resume.getCreatedBy());
         res.setCreatedAt(resume.getCreatedAt());
+
         return res;
     }
 
@@ -100,11 +104,14 @@ public class ResumeService {
         res.setCreatedBy(resume.getCreatedBy());
         res.setUpdatedAt(resume.getUpdatedAt());
         res.setUpdatedBy(resume.getUpdatedBy());
+
         if (resume.getJob() != null) {
             res.setCompanyName(resume.getJob().getCompany().getName());
         }
+
         res.setUser(new ResFetchResumeDTO.UserResume(resume.getUser().getId(), resume.getUser().getName()));
         res.setJob(new ResFetchResumeDTO.JobResume(resume.getJob().getId(), resume.getJob().getName()));
+
         return res;
     }
 
@@ -112,16 +119,22 @@ public class ResumeService {
         Page<Resume> pageUser = this.resumeRepository.findAll(spec, pageable);
         ResultPaginationDTO rs = new ResultPaginationDTO();
         ResultPaginationDTO.Meta mt = new ResultPaginationDTO.Meta();
+
         mt.setPage(pageable.getPageNumber() + 1);
         mt.setPageSizes(pageable.getPageSize());
+
         mt.setPages(pageUser.getTotalPages());
         mt.setTotals(pageUser.getTotalElements());
+
         rs.setMeta(mt);
+
         // remove sensitive data
         List<ResFetchResumeDTO> listResume = pageUser.getContent()
                 .stream().map(item -> this.getResume(item))
                 .collect(Collectors.toList());
+
         rs.setResult(listResume);
+
         return rs;
     }
 

@@ -14,14 +14,16 @@ import vn.hoidanit.jobhunter.util.constant.GenderEnum;
 @NoArgsConstructor
 public class ResUserDTO {
     private long id;
-    private String name;
     private String email;
+    private String name;
     private GenderEnum gender;
     private String address;
     private int age;
     private Instant updatedAt;
-    private Instant createAt;
+    private Instant createdAt;
+
     private CompanyUser company;
+
     private RoleUser role;
 
     @Getter
